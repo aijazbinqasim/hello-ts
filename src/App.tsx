@@ -1,34 +1,20 @@
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
+import { AppProps, Users } from "./app.types";
+import User from "./components/User";
 
-interface Props {
-  title: string;
-}
-
-interface Users {
-  name: {
-    first: string;
-    last: string;
-  };
-
-  login: {
-    uuid: string;
-  };
-
-  email: string;
-}
-
-const App: FC<Props> = ({ title }) => {
+const App: FC<AppProps> = ({ title }) => {
   const [users, setUsers] = useState<Users[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getUsers = async () => {
     try {
+      setIsLoading(true);
       const { data } = await axios.get("https://randomuser.me/api/?results=10");
-
-      console.log(data);
       setUsers(data.results);
     } catch (error) {
-      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -39,18 +25,10 @@ const App: FC<Props> = ({ title }) => {
   return (
     <div>
       <h1>{title}</h1>
+      {isLoading && <p>Loading...</p>}
       <ul>
         {users.map(({ name, login, email }) => {
-          return (
-            <li key={login.uuid}>
-              <div>
-                Name: {name.first} {name.last}
-              </div>
-
-              <div>Email: {email}</div>
-              <hr />
-            </li>
-          );
+          return <User key={login.uuid} name={name} email={email} />;
         })}
       </ul>
     </div>
